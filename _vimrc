@@ -552,8 +552,8 @@ autocmd! BufNewFile,BufRead * setlocal nofoldenable
 autocmd Filetype vim noremap <buffer> <F1> <Esc>:help <C-r><C-w><CR>
 " }}}
 " Arch Linux {{{
-autocmd BufNewFile,BufRead PKGBUILD setl syntax=sh ft=sh
-autocmd BufNewFile,BufRead *.install setl syntax=sh ft=sh
+autocmd BufNewFile,BufRead PKGBUILD setlocal syntax=sh ft=sh
+autocmd BufNewFile,BufRead *.install setlocal syntax=sh ft=sh
 " }}}
 " HTML {{{
 autocmd FileType html,xhtml setlocal smartindent foldmethod=indent
@@ -561,7 +561,7 @@ autocmd FileType html,xhtml setlocal smartindent foldmethod=indent
 " CSS {{{
 autocmd FileType css setlocal smartindent foldmethod=indent
 autocmd FileType css setlocal noexpandtab tabstop=2 shiftwidth=2
-autocmd BufNewFile,BufRead *.scss setl ft=scss
+autocmd BufNewFile,BufRead *.scss setlocal ft=scss
 " 删除一条CSS中无用空格
 autocmd filetype css vnoremap <leader>co J:s/\s*\([{:;,]\)\s*/\1/g<CR>:let @/=''<cr>
 autocmd filetype css nnoremap <leader>co :s/\s*\([{:;,]\)\s*/\1/g<CR>:let @/=''<cr>
@@ -573,11 +573,12 @@ autocmd BufRead,BufNewFile *.tpl setlocal ft=tpl syntax=html
 autocmd BufRead,BufNewFile *.json setlocal ft=json
 " }}}
 " Markdown {{{
-autocmd FileType markdown setf expandtab
+autocmd FileType markdown set shiftwidth=4 expandtab
+autocmd BufNewFile,BufRead *.mk setlocal filetype=markdown
 " }}}
 
 " Python 文件的一般设置，比如不要 tab 等
-"autocmd FileType python set tabstop=4 shiftwidth=4 expandtab
+autocmd FileType python setlocal tabstop=4 shiftwidth=4 expandtab
 
 " {{{ linux 下非root用户保存
 " cmap w!! w !sudo tee % > /dev/null
