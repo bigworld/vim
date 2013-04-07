@@ -1,38 +1,25 @@
 " {{{
-" DesCRiption: 适合自己使用的vimrc文件，for Linux/Windows, GUI/Console
-" Last Change: 2013-03-24
 " Author:      Asins - asinsimple AT gmail DOT com
 "              Get latest vimrc from http://nootn.com/lab/vim
-" Version:     3.4
+" Last Change: 2013-04-02
 "}}}
-
-" 设置leader为,
-let mapleader=","
-let g:mapleader=","
-let maplocalleader=","
-" 关闭 vi 兼容模式
-set nocompatible
-
-"编辑vim配置文件
-if has("unix")
-    set fileformats=unix,dos,mac
-    nmap <leader>e :tabnew $HOME/.vimrc<cr>
-	let $VIMFILES = $HOME."/.vim"
-else
-    set fileformats=dos,unix,mac
-    nmap <leader>e :tabnew $VIM/_vimrc<cr>
-	let $VIMFILES = $VIM."/vimfiles"
-endif
 
 " {{{ 全局设置
 " 关闭 vi 兼容模式
 set nocompatible
+" 检测文件类型插件
+filetype plugin indent on
+" 设置leader为,
+let mapleader=","
+let maplocalleader=","
+
+" 自动运用设置
+autocmd! BufWritePost _vimrc silent source $VIM/_vimrc
+nmap <leader>e :tabedit $MYVIMRC<cr>
+" 允许在有未保存的修改时切换缓冲区
+set hidden
 " 自动语法高亮
 syntax on
-" 检测文件类型
-filetype on
-" 检测文件类型插件
-filetype plugin on
 " 不设定在插入状态无法用退格键和 Delete 键删除回车符
 set backspace=indent,eol,start
 set whichwrap+=<,>,h,l
@@ -70,8 +57,6 @@ set t_vb=
 
 "How many tenths of a second to blink
 set mat=2
-" 允许在有未保存的修改时切换缓冲区，此时的修改由 vim 负责保存
-set hidden
 " 智能自动缩进
 set smartindent
 "显示括号配对情况
@@ -87,9 +72,20 @@ set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize,slas
 " 设定doc文档目录
 let helptags=$VIMFILES."/doc"
 set helplang=cn
+
+"编辑vim配置文件
+if has("unix")
+    set fileformats=unix,dos,mac
+	let $VIMFILES = $HOME."/.vim"
+else
+    set fileformats=dos,unix,mac
+	let $VIMFILES = $VIM."/vimfiles"
+endif
+
 " }}}
 
 " {{{ plugin for vundle
+filetype off "必要关闭
 " more script see: http://vim-scripts.org/vim/scripts.html
 set rtp+=$VIMFILES/bundle/vundle/
 call vundle#rc()
@@ -115,6 +111,7 @@ autocmd filetype php setlocal dictionary+=$VIMFILES/bundle/vim-dict/dict/php.dic
 Bundle 'asins/vim-colors'
 Bundle 'tpope/vim-vividchalk'
 Bundle 'chriskempson/vim-tomorrow-theme'
+Bundle 'w0ng/vim-hybrid'
 " 设定配色方案
 colorscheme molokai
 
@@ -125,27 +122,42 @@ Bundle 'pangloss/vim-javascript'
 Bundle 'python.vim--Vasiliev'
 Bundle 'xml.vim'
 Bundle 'tpope/vim-markdown'
-Bundle "lepture/vim-css"
+Bundle 'asins/vim-css'
+
+" {{{ Coffee相关
+" npm install -g coffee-script coffeelint
+Bundle 'kchmck/vim-coffee-script'
+" 自动生成代码
+autocmd! BufWritePost *.coffee silent CoffeeMake!
+" }}}
+
+"{{{ 对齐代码
+Bundle 'Eivy/Align'
+" 原有,tt冲突
+map <Leader>tT <Plug>AM_tt
+" }}}
 
 " Code Completins
 " {{{ plugin/neocomplcache.vim 自动提示插件
-Bundle 'Shougo/neocomplcache'
-let g:neocomplcache_enable_at_startup=1
-let g:neocomplcache_disable_auto_complete = 1 "禁用自动完成
-let g:neocomplcache_enable_smart_case=1
-let g:neocomplcache_min_syntax_length = 3
-let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
-set completeopt-=preview
+"Bundle 'Shougo/neocomplcache'
+"let g:neocomplcache_enable_at_startup=1
+"let g:neocomplcache_disable_auto_complete = 1 "禁用自动完成
+"let g:neocomplcache_enable_smart_case=1
+"let g:neocomplcache_min_syntax_length = 3
+"let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
+"set completeopt-=preview
 "启用自动代码提示
-nmap <Leader>ne :NeoComplCacheToggle<CR>
-" Define dictionary.
-let g:neocomplcache_dictionary_filetype_lists = {
-	\ 'default' : '',
-	\ 'css' : $VIMFILES.'/dict/css.dic',
-	\ 'php' : $VIMFILES.'/dict/php.dic',
-	\ 'javascript' : $VIMFILES.'/dict/javascript.dic'
-	\ }
+"nmap <Leader>ne :NeoComplCacheToggle<CR>
+"" Define dictionary.
+"let g:neocomplcache_dictionary_filetype_lists = {
+	"\ 'default' : '',
+	"\ 'css' : $VIMFILES.'/dict/css.dic',
+	"\ 'php' : $VIMFILES.'/dict/php.dic',
+	"\ 'javascript' : $VIMFILES.'/dict/javascript.dic'
+	"\ }
+" }}}
 
+" {{{ Snippet
 Bundle "honza/snipmate-snippets"
 Bundle "Shougo/neosnippet"
 let g:neosnippet#snippets_directory=$VIMFILES.'/bundle/snipmate-snippets/snippets'
@@ -154,11 +166,6 @@ imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 imap <C-l> <Plug>(neocomplcache_snippets_force_jump)
 smap <C-l> <Plug>(neocomplcache_snippets_force_jump)
-
-" For snippet_complete marker.
-if has('conceal')
-  set conceallevel=2 concealcursor=i
-endif
 " }}}
 
 " {{{ 代码垂直移动
@@ -256,8 +263,8 @@ Bundle 'gg/python.vim'
 	autocmd BufWinEnter \[Buf\ List\] setl nonumber
 	" }}}
 
-	" {{{ The-NERD-tree 文件管理器
-	Bundle 'The-NERD-tree'
+	" {{{ NERDtree 文件管理器
+	Bundle 'scrooloose/nerdtree'
 	" 让Tree把自己给装饰得多姿多彩漂亮点
 	let NERDChristmasTree=1
 	" 控制当光标移动超过一定距离时，是否自动将焦点调整到屏中心
@@ -373,7 +380,7 @@ Bundle 'gg/python.vim'
 	" % 正向匹配      g% 反向匹配
 	" [% 定位块首     ]% 定位块尾
 	"}}}
-	
+
 	" {{{ MatchTag HTML标签高亮配对
 	Bundle 'MatchTag'
 	" }}}
@@ -392,8 +399,8 @@ Bundle 'gg/python.vim'
 	" <silent>* 当前MarkWord的下一个     <silent># 当前MarkWord的上一个
 	" <silent>/ 所有MarkWords的下一个    <silent>? 所有MarkWords的上一个
 	"}}}
+	filetype plugin indent on " 使用vundle关闭，结束时开始
 " }}}
-
 
 " {{{ 查找光标位置的单词并生成结果列表
 function! QuickSearchList(visual, ...)
@@ -465,15 +472,7 @@ endif
 
 
 " 删除所有行未尾空格
-"function! g:mergeLines() range
-  "let lines = join(map(getline(a:firstline, a:lastline), 'matchstr(v:val, "^\\s*\\zs.*\\ze\\s*$")'), '')
-  "let indent = substitute(getline('.'), '^\(\s*\).*', '\1', '')
-  "silent! exe "normal! gvc"
-  "call setline('.', indent . lines)
-"endfunction
-"vnoremap <f12> :call g:mergeLines()<cr>
 nnoremap <silent> <f12> :%s/[ \t\r]\+$//g<cr>
-" :%s/[ \t\r]\+$//g<cr>
 
 " 窗口切换
 nnoremap <c-h> <c-w>h
@@ -547,16 +546,14 @@ set foldcolumn=0
 set switchbuf=usetab,newtab
 " 新建的文件，刚打开的文件不折叠
 autocmd! BufNewFile,BufRead * setlocal nofoldenable
-" 自动运用设置
-autocmd! bufwritepost _vimrc silent source $VIM/_vimrc
 " }}}
 
 " VimFiles {{{
 autocmd Filetype vim noremap <buffer> <F1> <Esc>:help <C-r><C-w><CR>
 " }}}
 " Arch Linux {{{
-autocmd BufNewFile,BufRead PKGBUILD setl syntax=sh ft=sh
-autocmd BufNewFile,BufRead *.install setl syntax=sh ft=sh
+autocmd BufNewFile,BufRead PKGBUILD setlocal syntax=sh ft=sh
+autocmd BufNewFile,BufRead *.install setlocal syntax=sh ft=sh
 " }}}
 " HTML {{{
 autocmd FileType html,xhtml setlocal smartindent foldmethod=indent
@@ -564,7 +561,7 @@ autocmd FileType html,xhtml setlocal smartindent foldmethod=indent
 " CSS {{{
 autocmd FileType css setlocal smartindent foldmethod=indent
 autocmd FileType css setlocal noexpandtab tabstop=2 shiftwidth=2
-autocmd BufNewFile,BufRead *.scss setl ft=scss
+autocmd BufNewFile,BufRead *.scss setlocal ft=scss
 " 删除一条CSS中无用空格
 autocmd filetype css vnoremap <leader>co J:s/\s*\([{:;,]\)\s*/\1/g<CR>:let @/=''<cr>
 autocmd filetype css nnoremap <leader>co :s/\s*\([{:;,]\)\s*/\1/g<CR>:let @/=''<cr>
@@ -576,14 +573,12 @@ autocmd BufRead,BufNewFile *.tpl setlocal ft=tpl syntax=html
 autocmd BufRead,BufNewFile *.json setlocal ft=json
 " }}}
 " Markdown {{{
-autocmd FileType markdown setf expandtab
+autocmd FileType markdown setlocal shiftwidth=4 expandtab
+autocmd BufNewFile,BufRead *.mk setlocal filetype=markdown
 " }}}
 
-" PHP Twig 模板引擎语法
-autocmd BufRead,BufNewFile *.twig set syntax=twig
-
 " Python 文件的一般设置，比如不要 tab 等
-"autocmd FileType python set tabstop=4 shiftwidth=4 expandtab
+autocmd FileType python setlocal tabstop=4 shiftwidth=4 expandtab
 
 " {{{ linux 下非root用户保存
 " cmap w!! w !sudo tee % > /dev/null
@@ -688,3 +683,4 @@ command! -nargs=* -bar Wjs call UglifyJs(<f-args>)
 
 
 let g:VimrcIsLoad=1 " source时让一些设置不再执行
+
