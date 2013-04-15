@@ -84,6 +84,52 @@ endif
 
 " }}}
 
+" {{{ Win平台下窗口全屏组件 gvimfullscreen.dll
+" Alt + Enter 全屏切换
+" Shift + t 降低窗口透明度
+" Shift + y 加大窗口透明度
+" Shift + r 切换Vim是否总在最前面显示
+" Vim启动的时候自动使用当前颜色的背景色以去除Vim的白色边框
+if has('gui_running') && has('gui_win32') && has('libcall')
+	let g:MyVimLib = 'gvimfullscreen.dll'
+	function! ToggleFullScreen()
+		call libcall(g:MyVimLib, 'ToggleFullScreen', 1)
+	endfunction
+
+	let g:VimAlpha = 245
+	function! SetAlpha(alpha)
+		let g:VimAlpha = g:VimAlpha + a:alpha
+		if g:VimAlpha < 180
+			let g:VimAlpha = 180
+		endif
+		if g:VimAlpha > 255
+			let g:VimAlpha = 255
+		endif
+		call libcall(g:MyVimLib, 'SetAlpha', g:VimAlpha)
+	endfunction
+
+	let g:VimTopMost = 0
+	function! SwitchVimTopMostMode()
+		if g:VimTopMost == 0
+			let g:VimTopMost = 1
+		else
+			let g:VimTopMost = 0
+		endif
+		call libcall(g:MyVimLib, 'EnableTopMost', g:VimTopMost)
+	endfunction
+	"映射 Alt+Enter 切换全屏vim
+	noremap <a-enter> <esc>:call ToggleFullScreen()<cr>
+	"切换Vim是否在最前面显示
+	nmap <s-r> <esc>:call SwitchVimTopMostMode()<cr>
+	"增加Vim窗体的不透明度
+	nmap <s-t> <esc>:call SetAlpha(10)<cr>
+	"增加Vim窗体的透明度
+	nmap <s-y> <esc>:call SetAlpha(-10)<cr>
+	" 默认设置透明
+	autocmd GUIEnter * call libcallnr(g:MyVimLib, 'SetAlpha', g:VimAlpha)
+endif
+" }}}
+
 " {{{ plugin for vundle
 filetype off "必要关闭
 " more script see: http://vim-scripts.org/vim/scripts.html
@@ -94,6 +140,23 @@ let g:bundle_dir = $VIMFILES.'/bundle'
 " let Vundle manage Vundle
 " required! 
 Bundle 'gmarik/vundle'
+
+" {{{ 状态栏
+Bundle 'Lokaltog/vim-powerline'
+let g:Powerline_symbols = 'fancy'
+nmap <Leader>r :PowerlineReloadColorscheme<CR>
+"autocmd BufWinEnter * call Pl#UpdateStatusline(1)
+"autocmd BufWritePost _vimrc call PowerlineReloadColorscheme
+let g:Powerline_mode_n  = 'N'  " Normal (surrounded by spaces)
+let g:Powerline_mode_i  = 'I'  " Insert
+let g:Powerline_mode_R  = 'R'  " Replace
+let g:Powerline_mode_v  = 'v'  " Visual
+let g:Powerline_mode_V  = 'V'  " Visual linewise
+let g:Powerline_mode_cv = 'cv' " Visual blockwise
+let g:Powerline_mode_s  = 's'  " Select
+let g:Powerline_mode_S  = 'S'  " Select linewise
+let g:Powerline_mode_cs = 'cs' " Select blockwise
+" }}}
 
 " Docs
 Bundle 'asins/vimcdoc'
@@ -120,7 +183,6 @@ Bundle 'othree/html5.vim'
 Bundle 'nono/jquery.vim'
 Bundle 'pangloss/vim-javascript'
 Bundle 'python.vim--Vasiliev'
-Bundle 'xml.vim'
 Bundle 'tpope/vim-markdown'
 Bundle 'asins/vim-css'
 
@@ -158,9 +220,9 @@ map <Leader>tT <Plug>AM_tt
 " }}}
 
 " {{{ Snippet
-Bundle "honza/snipmate-snippets"
+Bundle "honza/vim-snippets"
 Bundle "Shougo/neosnippet"
-let g:neosnippet#snippets_directory=$VIMFILES.'/bundle/snipmate-snippets/snippets'
+let g:neosnippet#snippets_directory=$VIMFILES.'/bundle/vim-snippets/snippets'
 " Plugin key-mappings.
 imap <C-k> <Plug>(neocomplcache_snippets_force_expand)
 smap <C-k> <Plug>(neocomplcache_snippets_force_expand)
@@ -231,14 +293,6 @@ Bundle 'gg/python.vim'
 
 	"{{{ tpope/vim-fugitive Git命令集合
 	Bundle 'tpope/vim-fugitive'
-	if executable('git')
-		nnoremap <silent> <leader>gs :Gstatus<CR>
-		nnoremap <silent> <leader>gd :Gdiff<CR>
-		nnoremap <silent> <leader>gc :Gcommit<CR>
-		nnoremap <silent> <leader>gb :Gblame<CR>
-		nnoremap <silent> <leader>gl :Glog<CR>
-		nnoremap <silent> <leader>gp :Git push<CR>
-	endif
 	"}}}
 
 "Bundle 'FencView.vim'
@@ -253,13 +307,13 @@ Bundle 'gg/python.vim'
 	" \bv 左右方式查看
 	noremap <silent> <s-q> :BufExplorerVerticalSplit<CR>
 	
-	let g:bufExplorerDefaultHelp=0      " 不显示默认帮助信息
-	let g:bufExplorerShowRelativePath=1 " 显示相对路径
-	let g:bufExplorerSortBy='mru'       " 使用最近使用的排列方式
-	let g:bufExplorerSplitRight=0       " 居左分割
-	let g:bufExplorerSplitVertical=1    " 垂直分割
-	let g:bufExplorerSplitVertSize = 30 " Split width
-	let g:bufExplorerUseCurrentWindow=1 " 在新窗口中打开
+	let g:bufExplorerDefaultHelp      = 0     " 不显示默认帮助信息
+	let g:bufExplorerShowRelativePath = 1     " 显示相对路径
+	let g:bufExplorerSortBy           = 'mru' " 使用最近使用的排列方式
+	let g:bufExplorerSplitRight       = 0     " 居左分割
+	let g:bufExplorerSplitVertical    = 1     " 垂直分割
+	let g:bufExplorerSplitVertSize    = 30    " Split width
+	let g:bufExplorerUseCurrentWindow = 1     " 在新窗口中打开
 	autocmd BufWinEnter \[Buf\ List\] setl nonumber
 	" }}}
 
@@ -450,9 +504,11 @@ nnoremap <c-c> :let @+ = expand('%:p')<cr>
 
 if !exists('g:VimrcIsLoad')
 	set termencoding=chinese
+	set encoding=utf-8
 	set fileencodings=ucs-bom,utf-8,cp936,cp950,latin1
 	set ambiwidth=double
-	set guifont=YaHei\ Mono:h12
+	"set guifont=YaHei\ Mono:h12
+	set guifont=Microsoft_YaHei_Mono_for_powerl:h12:cGB2312
 	set linespace=0
 	" 解决自动换行格式下, 如高度在折行之后超过窗口高度结果这一行看不到的问题
 	set display=lastline
@@ -467,7 +523,7 @@ if !exists('g:VimrcIsLoad')
 	" 显示状态栏 (默认值为 1, 无法显示状态栏)
 	set laststatus=2
 	" 设置在状态行显示的信息
-	set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ [%{(&fenc==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}]\ %c:%l/%L%)
+	"set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ [%{(&fenc==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}]\ %c:%l/%L%)
 endif
 
 
@@ -582,52 +638,6 @@ autocmd FileType python setlocal tabstop=4 shiftwidth=4 expandtab
 
 " {{{ linux 下非root用户保存
 " cmap w!! w !sudo tee % > /dev/null
-" }}}
-
-" {{{ Win平台下窗口全屏组件 gvimfullscreen.dll
-" Alt + Enter 全屏切换
-" Shift + t 降低窗口透明度
-" Shift + y 加大窗口透明度
-" Shift + r 切换Vim是否总在最前面显示
-" Vim启动的时候自动使用当前颜色的背景色以去除Vim的白色边框
-if has('gui_running') && has('gui_win32') && has('libcall')
-    let g:MyVimLib = 'gvimfullscreen.dll'
-    function! ToggleFullScreen()
-        call libcall(g:MyVimLib, 'ToggleFullScreen', 1)
-    endfunction
-
-    let g:VimAlpha = 245
-    function! SetAlpha(alpha)
-        let g:VimAlpha = g:VimAlpha + a:alpha
-        if g:VimAlpha < 180
-            let g:VimAlpha = 180
-        endif
-        if g:VimAlpha > 255
-            let g:VimAlpha = 255
-        endif
-        call libcall(g:MyVimLib, 'SetAlpha', g:VimAlpha)
-    endfunction
-
-    let g:VimTopMost = 0
-    function! SwitchVimTopMostMode()
-        if g:VimTopMost == 0
-            let g:VimTopMost = 1
-        else
-            let g:VimTopMost = 0
-        endif
-        call libcall(g:MyVimLib, 'EnableTopMost', g:VimTopMost)
-    endfunction
-    "映射 Alt+Enter 切换全屏vim
-    map <a-enter> <esc>:call ToggleFullScreen()<cr>
-    "切换Vim是否在最前面显示
-    nmap <s-r> <esc>:call SwitchVimTopMostMode()<cr>
-    "增加Vim窗体的不透明度
-    nmap <s-t> <esc>:call SetAlpha(10)<cr>
-    "增加Vim窗体的透明度
-    nmap <s-y> <esc>:call SetAlpha(-10)<cr>
-    " 默认设置透明
-    autocmd GUIEnter * call libcallnr(g:MyVimLib, 'SetAlpha', g:VimAlpha)
-endif
 " }}}
 
 " {{{ 回车时前字符为{时自动换行补全
