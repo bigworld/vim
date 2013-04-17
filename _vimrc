@@ -83,6 +83,7 @@ else
 endif
 
 " }}}
+"set nobomb
 
 " {{{ Win平台下窗口全屏组件 gvimfullscreen.dll
 " Alt + Enter 全屏切换
@@ -118,17 +119,41 @@ if has('gui_running') && has('gui_win32') && has('libcall')
 		call libcall(g:MyVimLib, 'EnableTopMost', g:VimTopMost)
 	endfunction
 	"映射 Alt+Enter 切换全屏vim
-	noremap <a-enter> <esc>:call ToggleFullScreen()<cr>
+	noremap <a-enter> :call ToggleFullScreen()<cr>
 	"切换Vim是否在最前面显示
-	nmap <s-r> <esc>:call SwitchVimTopMostMode()<cr>
+	nmap <s-r> :call SwitchVimTopMostMode()<cr>
 	"增加Vim窗体的不透明度
-	nmap <s-t> <esc>:call SetAlpha(10)<cr>
+	nmap <s-t> :call SetAlpha(10)<cr>
 	"增加Vim窗体的透明度
-	nmap <s-y> <esc>:call SetAlpha(-10)<cr>
+	nmap <s-y> :call SetAlpha(-10)<cr>
 	" 默认设置透明
 	autocmd GUIEnter * call libcallnr(g:MyVimLib, 'SetAlpha', g:VimAlpha)
 endif
 " }}}
+
+if !exists('g:VimrcIsLoad')
+	set termencoding=chinese
+	set encoding=utf-8
+	set fileencodings=ucs-bom,utf-8,cp936,cp950,latin1
+	set ambiwidth=double
+	"set guifont=YaHei\ Mono:h12
+	set guifont=Microsoft_YaHei_Mono_for_powerl:h12:cGB2312
+	set linespace=0
+	" 解决自动换行格式下, 如高度在折行之后超过窗口高度结果这一行看不到的问题
+	set display=lastline
+	language messages zh_CN.UTF-8
+	set langmenu=zh_CN.UTF-8
+	set guioptions-=m " 隐藏菜单栏
+	set guioptions-=T " 隐藏工具栏
+	set guioptions-=L " 隐藏左侧滚动条
+	set guioptions-=r " 隐藏右侧滚动条
+	set guioptions-=b " 隐藏底部滚动条
+	set showtabline=0 " Tab栏
+	" 显示状态栏 (默认值为 1, 无法显示状态栏)
+	set laststatus=2
+	" 设置在状态行显示的信息
+	"set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ [%{(&fenc==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}]\ %c:%l/%L%)
+endif
 
 " {{{ plugin for vundle
 filetype off "必要关闭
@@ -142,7 +167,7 @@ let g:bundle_dir = $VIMFILES.'/bundle'
 Bundle 'gmarik/vundle'
 
 " {{{ 状态栏
-Bundle 'Lokaltog/vim-powerline'
+Bundle 'asins/vim-powerline'
 let g:Powerline_symbols = 'fancy'
 nmap <Leader>r :PowerlineReloadColorscheme<CR>
 "autocmd BufWinEnter * call Pl#UpdateStatusline(1)
@@ -400,17 +425,6 @@ Bundle 'gg/python.vim'
 	" :Ren 开始重命名
 	"}}}
 	
-	" {{{ mikeage/ShowMarks 设置标记（标签）
-	Bundle 'mikeage/ShowMarks'
-	let g:showmarks_include = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	let g:showmarks_ignore_type = "hqm"
-	" m{mark} 设置标记  '{mark} 移动到标记
-	"<Leader>mt   - 打开/关闭ShowMarks插件
-	"<Leader>mh   - 清除当前行的标记
-	"<Leader>ma   - 清除当前缓冲区中所有的标记
-	"<Leader>mm   - 在当前行打一个标记，使用下一个可用的标记名
-	"}}}
-	
 	" {{{ ctrlp.vim 文件搜索
 	Bundle 'ctrlp.vim'
 	"set wildignore+=*/tmp/*,*.so,*.swp,*.zip  " MacOSX/Linux
@@ -429,6 +443,18 @@ Bundle 'gg/python.vim'
 	"<c-r> 切换搜索匹配模式：字符串/正则
 	" }}}
 
+	" {{{ mikeage/ShowMarks 设置标记（标签）
+	Bundle 'mikeage/ShowMarks'
+	let g:showmarks_enable      = 0
+	let g:showmarks_include     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	let g:showmarks_ignore_type = "hqm"
+	" m{mark} 设置标记  '{mark} 移动到标记
+	"<Leader>mt   - 打开/关闭ShowMarks插件
+	"<Leader>mh   - 清除当前行的标记
+	"<Leader>ma   - 清除当前缓冲区中所有的标记
+	"<Leader>mm   - 在当前行打一个标记，使用下一个可用的标记名
+	"}}}
+
 	" {{{ matchit.zip 对%命令进行扩展使得能在嵌套标签和语句之间跳转
 	Bundle 'matchit.zip'
 	" % 正向匹配      g% 反向匹配
@@ -441,18 +467,13 @@ Bundle 'gg/python.vim'
 
 	" {{{ Mark 给各种tags标记不同的颜色，便于观看调式的插件。
 	Bundle 'Mark'
-	" 这样，当我输入“,hl”时，就会把光标下的单词高亮，在此单词上按“,hh”会清除该单词的高亮。如果在高亮单词外输入“,hh”，会清除所有的高亮。
-	" 你也可以使用virsual模式选中一段文本，然后按“,hl”，会高亮你所选中的文本；或者你可以用“,hr”来输入一个正则表达式，这会高亮所有符合这个正则表达式的文本。
 	nmap <silent> <leader>hl <plug>MarkSet
 	vmap <silent> <leader>hl <plug>MarkSet
 	nmap <silent> <leader>hh <plug>MarkClear
 	vmap <silent> <leader>hh <plug>MarkClear
 	nmap <silent> <leader>hr <plug>MarkRegex
 	vmap <silent> <leader>hr <plug>MarkRegex
-	" 你可以在高亮文本上使用“,#”或“,*”来上下搜索高亮文本。在使用了“,#”或“,*”后，就可以直接输入“#”或“*”来继续查找该高亮文本，直到你又用“#”或“*”查找了其它文本。
-	" <silent>* 当前MarkWord的下一个     <silent># 当前MarkWord的上一个
-	" <silent>/ 所有MarkWords的下一个    <silent>? 所有MarkWords的上一个
-	"}}}
+	" }}}
 	filetype plugin indent on " 使用vundle关闭，结束时开始
 " }}}
 
@@ -499,33 +520,6 @@ nnoremap <leader>po "*p
 vnoremap <c-c> "+y
 " 普通模式下 Ctrl+c 复制文件路径
 nnoremap <c-c> :let @+ = expand('%:p')<cr>
-
-"set nobomb
-
-if !exists('g:VimrcIsLoad')
-	set termencoding=chinese
-	set encoding=utf-8
-	set fileencodings=ucs-bom,utf-8,cp936,cp950,latin1
-	set ambiwidth=double
-	"set guifont=YaHei\ Mono:h12
-	set guifont=Microsoft_YaHei_Mono_for_powerl:h12:cGB2312
-	set linespace=0
-	" 解决自动换行格式下, 如高度在折行之后超过窗口高度结果这一行看不到的问题
-	set display=lastline
-	language messages zh_CN.UTF-8
-	set langmenu=zh_CN.UTF-8
-	set guioptions-=m " 隐藏菜单栏
-	set guioptions-=T " 隐藏工具栏
-	set guioptions-=L " 隐藏左侧滚动条
-	set guioptions-=r " 隐藏右侧滚动条
-	set guioptions-=b " 隐藏底部滚动条
-	set showtabline=0 " Tab栏
-	" 显示状态栏 (默认值为 1, 无法显示状态栏)
-	set laststatus=2
-	" 设置在状态行显示的信息
-	"set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ [%{(&fenc==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}]\ %c:%l/%L%)
-endif
-
 
 " 删除所有行未尾空格
 nnoremap <silent> <f12> :%s/[ \t\r]\+$//g<cr>
